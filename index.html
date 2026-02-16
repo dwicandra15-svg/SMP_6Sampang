@@ -6,85 +6,146 @@
     <title>SMP Negeri 6 Sampang</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #2d5016 0%, #4a7c2c 100%); min-height: 100vh; }
-        .header { background: rgba(255, 255, 255, 0.95); box-shadow: 0 2px 10px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 1000; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #2d5016 0%, #4a7c2c 100%); min-height: 100vh; overflow-x: hidden; }
+        
+        /* Running Text / Ticker */
+        .running-text-container { background: #ffc107; color: #333; padding: 12px 0; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.2); position: relative; }
+        .running-text { display: inline-block; white-space: nowrap; animation: scroll 30s linear infinite; font-weight: 600; font-size: 16px; }
+        @keyframes scroll { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
+        
+        .header { background: rgba(255, 255, 255, 0.95); box-shadow: 0 2px 10px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 1000; animation: slideDown 0.5s ease-out; }
+        @keyframes slideDown { from { transform: translateY(-100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        
         .header-content { max-width: 1400px; margin: 0 auto; padding: 20px 40px; display: flex; justify-content: space-between; align-items: center; }
-        .school-info { display: flex; align-items: center; gap: 20px; }
-        .school-logo { width: 80px; height: 80px; object-fit: contain; border-radius: 10px; }
+        .school-info { display: flex; align-items: center; gap: 20px; animation: fadeIn 0.8s ease-out 0.3s both; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .school-logo { width: 80px; height: 80px; object-fit: contain; border-radius: 10px; transition: transform 0.3s ease; }
+        .school-logo:hover { transform: rotate(360deg) scale(1.1); }
+        
         .school-text h1 { color: #2d5016; font-size: 28px; margin-bottom: 5px; }
         .school-text p { color: #666; font-size: 14px; }
-        .login-btn { background: #4a7c2c; color: white; border: none; padding: 12px 30px; border-radius: 25px; cursor: pointer; font-size: 16px; transition: all 0.3s; }
-        .login-btn:hover { background: #2d5016; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(74, 124, 44, 0.4); }
-        .logout-btn { background: #dc3545; color: white; border: none; padding: 12px 30px; border-radius: 25px; cursor: pointer; font-size: 16px; transition: all 0.3s; margin-left: 10px; }
-        .logout-btn:hover { background: #c82333; }
-        .back-btn { background: #6c757d; color: white; border: none; padding: 12px 30px; border-radius: 25px; cursor: pointer; font-size: 16px; transition: all 0.3s; margin-bottom: 20px; display: inline-flex; align-items: center; gap: 10px; }
-        .back-btn:hover { background: #5a6268; }
+        
+        .login-btn, .logout-btn, .back-btn, .admin-btn, .submit-btn { transition: all 0.3s ease; position: relative; overflow: hidden; }
+        .login-btn::before, .admin-btn::before, .submit-btn::before { content: ''; position: absolute; top: 50%; left: 50%; width: 0; height: 0; border-radius: 50%; background: rgba(255,255,255,0.3); transform: translate(-50%, -50%); transition: width 0.6s, height 0.6s; }
+        .login-btn:hover::before, .admin-btn:hover::before, .submit-btn:hover::before { width: 300px; height: 300px; }
+        
+        .login-btn { background: #4a7c2c; color: white; border: none; padding: 12px 30px; border-radius: 25px; cursor: pointer; font-size: 16px; animation: fadeIn 0.8s ease-out 0.5s both; }
+        .login-btn:hover { background: #2d5016; transform: translateY(-3px); box-shadow: 0 6px 20px rgba(74, 124, 44, 0.4); }
+        .logout-btn { background: #dc3545; color: white; border: none; padding: 12px 30px; border-radius: 25px; cursor: pointer; font-size: 16px; margin-left: 10px; }
+        .logout-btn:hover { background: #c82333; transform: translateY(-3px); }
+        .back-btn { background: #6c757d; color: white; border: none; padding: 12px 30px; border-radius: 25px; cursor: pointer; font-size: 16px; margin-bottom: 20px; display: inline-flex; align-items: center; gap: 10px; }
+        .back-btn:hover { background: #5a6268; transform: translateX(-5px); }
+        
         .container { max-width: 1400px; margin: 40px auto; padding: 0 40px; }
-        .admin-panel { display: none; background: white; border-radius: 20px; padding: 40px; margin-bottom: 40px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        
+        .admin-panel { display: none; background: white; border-radius: 20px; padding: 40px; margin-bottom: 40px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); animation: zoomIn 0.5s ease-out; }
+        @keyframes zoomIn { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } }
+        
         .admin-panel h2 { color: #2d5016; margin-bottom: 30px; }
         .admin-actions { display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 30px; }
-        .admin-btn { background: #4a7c2c; color: white; border: none; padding: 12px 25px; border-radius: 8px; cursor: pointer; font-size: 15px; transition: all 0.3s; }
-        .admin-btn:hover { background: #2d5016; }
-        .hero { background: white; border-radius: 20px; padding: 60px; margin-bottom: 40px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); text-align: center; }
-        .hero img { max-width: 100%; height: 400px; object-fit: cover; border-radius: 15px; margin-bottom: 30px; }
-        .hero h2 { color: #2d5016; font-size: 36px; margin-bottom: 15px; }
-        .hero p { color: #666; font-size: 18px; line-height: 1.6; }
-        .section-header { background: white; border-radius: 15px; padding: 30px; margin-bottom: 30px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
+        .admin-btn { background: #4a7c2c; color: white; border: none; padding: 12px 25px; border-radius: 8px; cursor: pointer; font-size: 15px; }
+        .admin-btn:hover { background: #2d5016; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(74, 124, 44, 0.3); }
+        
+        .hero { background: white; border-radius: 20px; padding: 60px; margin-bottom: 40px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); text-align: center; animation: fadeInUp 0.8s ease-out; }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(50px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .hero img { max-width: 100%; height: 400px; object-fit: cover; border-radius: 15px; margin-bottom: 30px; transition: transform 0.5s ease; }
+        .hero img:hover { transform: scale(1.05); }
+        .hero h2 { color: #2d5016; font-size: 36px; margin-bottom: 15px; animation: fadeIn 1s ease-out 0.3s both; }
+        .hero p { color: #666; font-size: 18px; line-height: 1.6; animation: fadeIn 1s ease-out 0.5s both; }
+        
+        .section-header { background: white; border-radius: 15px; padding: 30px; margin-bottom: 30px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); animation: slideInLeft 0.8s ease-out; }
+        @keyframes slideInLeft { from { opacity: 0; transform: translateX(-50px); } to { opacity: 1; transform: translateX(0); } }
+        
         .section-header h2 { color: #2d5016; font-size: 32px; margin-bottom: 10px; display: flex; align-items: center; gap: 15px; }
         .section-header p { color: #666; font-size: 16px; }
+        
         .content-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 30px; margin-bottom: 60px; }
-        .content-card { background: white; border-radius: 15px; padding: 30px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); transition: transform 0.3s; cursor: pointer; position: relative; }
-        .content-card:hover { transform: translateY(-5px); box-shadow: 0 8px 30px rgba(0,0,0,0.2); }
-        .content-card img { width: 100%; height: 200px; object-fit: cover; border-radius: 10px; margin-bottom: 20px; }
+        
+        .content-card { background: white; border-radius: 15px; padding: 30px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); transition: all 0.4s ease; cursor: pointer; position: relative; opacity: 0; animation: fadeInCard 0.6s ease-out forwards; }
+        .content-card:nth-child(1) { animation-delay: 0.1s; }
+        .content-card:nth-child(2) { animation-delay: 0.2s; }
+        .content-card:nth-child(3) { animation-delay: 0.3s; }
+        .content-card:nth-child(4) { animation-delay: 0.4s; }
+        .content-card:nth-child(5) { animation-delay: 0.5s; }
+        .content-card:nth-child(6) { animation-delay: 0.6s; }
+        @keyframes fadeInCard { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .content-card:hover { transform: translateY(-10px) scale(1.02); box-shadow: 0 15px 40px rgba(0,0,0,0.2); }
+        .content-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, #4a7c2c, #2d5016); transform: scaleX(0); transition: transform 0.3s ease; }
+        .content-card:hover::before { transform: scaleX(1); }
+        
+        .content-card img { width: 100%; height: 200px; object-fit: cover; border-radius: 10px; margin-bottom: 20px; transition: transform 0.5s ease; }
+        .content-card:hover img { transform: scale(1.1); }
         .content-card h3 { color: #2d5016; font-size: 24px; margin-bottom: 15px; }
         .content-card p { color: #666; line-height: 1.6; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
         .content-date { color: #999; font-size: 14px; margin-top: 15px; display: flex; align-items: center; gap: 8px; }
-        .category-badge { display: inline-block; background: #4a7c2c; color: white; padding: 5px 15px; border-radius: 20px; font-size: 12px; font-weight: 600; margin-bottom: 15px; }
+        
+        .category-badge { display: inline-block; background: #4a7c2c; color: white; padding: 5px 15px; border-radius: 20px; font-size: 12px; font-weight: 600; margin-bottom: 15px; animation: pulse 2s infinite; }
+        @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+        
         .card-actions { margin-top: 20px; display: none; gap: 10px; }
         .card-actions.show { display: flex; }
         .edit-btn, .delete-btn { padding: 8px 20px; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; transition: all 0.3s; }
         .edit-btn { background: #ffc107; color: #333; }
-        .edit-btn:hover { background: #e0a800; }
+        .edit-btn:hover { background: #e0a800; transform: translateY(-2px); }
         .delete-btn { background: #dc3545; color: white; }
-        .delete-btn:hover { background: #c82333; }
+        .delete-btn:hover { background: #c82333; transform: translateY(-2px); }
         
-        /* Detail Page */
         .detail-page { display: none; }
-        .detail-page.active { display: block; }
-        .detail-content { background: white; border-radius: 20px; padding: 60px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        .detail-page.active { display: block; animation: fadeIn 0.5s ease-out; }
+        .detail-content { background: white; border-radius: 20px; padding: 60px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); animation: slideInRight 0.8s ease-out; }
+        @keyframes slideInRight { from { opacity: 0; transform: translateX(50px); } to { opacity: 1; transform: translateX(0); } }
+        
         .detail-content img { width: 100%; max-height: 500px; object-fit: cover; border-radius: 15px; margin-bottom: 30px; }
         .detail-content h1 { color: #2d5016; font-size: 42px; margin-bottom: 20px; }
         .detail-content .meta { color: #999; font-size: 16px; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 2px solid #e0e0e0; }
         .detail-content .body { color: #333; font-size: 18px; line-height: 1.8; white-space: pre-wrap; }
         
-        .footer { background: rgba(45, 80, 22, 0.9); color: white; padding: 30px 20px; text-align: center; margin-top: 60px; }
+        .footer { background: rgba(45, 80, 22, 0.9); color: white; padding: 30px 20px; text-align: center; margin-top: 60px; animation: fadeIn 1s ease-out; }
         .footer p { margin-bottom: 10px; }
         .footer-info { font-size: 14px; opacity: 0.9; }
-        .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(5px); overflow-y: auto; }
-        .modal-content { background: white; margin: 5% auto; padding: 40px; border-radius: 20px; width: 90%; max-width: 500px; position: relative; max-height: 85vh; overflow-y: auto; }
-        .close { position: absolute; right: 20px; top: 20px; font-size: 30px; cursor: pointer; color: #999; }
-        .close:hover { color: #333; }
+        
+        .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(5px); overflow-y: auto; animation: fadeIn 0.3s ease-out; }
+        .modal-content { background: white; margin: 5% auto; padding: 40px; border-radius: 20px; width: 90%; max-width: 500px; position: relative; max-height: 85vh; overflow-y: auto; animation: zoomIn 0.4s ease-out; }
+        .close { position: absolute; right: 20px; top: 20px; font-size: 30px; cursor: pointer; color: #999; transition: all 0.3s; }
+        .close:hover { color: #333; transform: rotate(90deg); }
         .modal h2 { color: #2d5016; margin-bottom: 30px; text-align: center; }
+        
         .form-group { margin-bottom: 20px; }
         .form-group label { display: block; color: #333; margin-bottom: 8px; font-weight: 500; }
-        .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 16px; }
-        .form-group input:focus, .form-group textarea:focus, .form-group select:focus { outline: none; border-color: #4a7c2c; }
+        .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 16px; transition: all 0.3s; }
+        .form-group input:focus, .form-group textarea:focus, .form-group select:focus { outline: none; border-color: #4a7c2c; box-shadow: 0 0 0 3px rgba(74, 124, 44, 0.1); }
         .form-group textarea { min-height: 120px; resize: vertical; font-family: inherit; }
         .form-group small { color: #999; font-size: 13px; display: block; margin-top: 5px; }
+        
         .file-input-wrapper { position: relative; overflow: hidden; display: inline-block; width: 100%; }
         .file-input-wrapper input[type=file] { position: absolute; left: -9999px; }
         .file-input-label { display: block; padding: 12px; background: #f8f9fa; border: 2px dashed #dee2e6; border-radius: 8px; text-align: center; cursor: pointer; transition: all 0.3s; }
-        .file-input-label:hover { background: #e9ecef; border-color: #4a7c2c; }
-        .preview-image { max-width: 100%; max-height: 200px; margin-top: 10px; border-radius: 8px; }
-        .submit-btn { background: #4a7c2c; color: white; border: none; padding: 15px 40px; border-radius: 25px; cursor: pointer; font-size: 16px; width: 100%; transition: all 0.3s; margin-top: 20px; }
-        .submit-btn:hover { background: #2d5016; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(74, 124, 44, 0.4); }
+        .file-input-label:hover { background: #e9ecef; border-color: #4a7c2c; transform: scale(1.02); }
+        .preview-image { max-width: 100%; max-height: 200px; margin-top: 10px; border-radius: 8px; animation: fadeIn 0.5s ease-out; }
+        
+        .submit-btn { background: #4a7c2c; color: white; border: none; padding: 15px 40px; border-radius: 25px; cursor: pointer; font-size: 16px; width: 100%; margin-top: 20px; }
+        .submit-btn:hover { background: #2d5016; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(74, 124, 44, 0.4); }
         .submit-btn:disabled { background: #ccc; cursor: not-allowed; transform: none; }
-        .error { color: #dc3545; padding: 10px; text-align: center; background: #f8d7da; border-radius: 8px; margin-bottom: 15px; }
-        .success { color: #28a745; padding: 10px; text-align: center; background: #d4edda; border-radius: 8px; margin-bottom: 15px; }
+        
+        .error { color: #dc3545; padding: 10px; text-align: center; background: #f8d7da; border-radius: 8px; margin-bottom: 15px; animation: shake 0.5s; }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-10px); } 75% { transform: translateX(10px); } }
+        
+        .success { color: #28a745; padding: 10px; text-align: center; background: #d4edda; border-radius: 8px; margin-bottom: 15px; animation: slideDown 0.5s ease-out; }
+        
         .loading { text-align: center; padding: 40px; color: white; font-size: 18px; }
-        .empty-state { text-align: center; padding: 60px 20px; color: white; }
+        .loading::after { content: ''; display: inline-block; width: 20px; height: 20px; border: 3px solid white; border-radius: 50%; border-top-color: transparent; animation: spin 1s linear infinite; margin-left: 10px; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        
+        .empty-state { text-align: center; padding: 60px 20px; color: white; animation: fadeIn 1s ease-out; }
         .empty-state h3 { font-size: 24px; margin-bottom: 15px; }
         .empty-state p { font-size: 16px; opacity: 0.9; }
+        
+        /* Scroll Animation */
+        .scroll-animate { opacity: 0; transform: translateY(30px); transition: all 0.6s ease-out; }
+        .scroll-animate.visible { opacity: 1; transform: translateY(0); }
         
         @media (max-width: 768px) {
             .header-content { flex-direction: column; gap: 20px; text-align: center; }
@@ -96,10 +157,18 @@
             .modal-content { margin: 10% auto; padding: 30px 20px; }
             .detail-content { padding: 30px 20px; }
             .detail-content h1 { font-size: 28px; }
+            .running-text { font-size: 14px; }
         }
     </style>
 </head>
 <body>
+    <!-- Running Text / Ticker -->
+    <div class="running-text-container">
+        <div class="running-text" id="runningText">
+            🎓 Selamat datang di Website SMP Negeri 6 Sampang • 📢 Pendaftaran Siswa Baru Tahun Ajaran 2026/2027 telah dibuka! • 🏆 Selamat kepada siswa yang meraih prestasi! • 📚 Mari belajar dengan giat untuk meraih cita-cita! •
+        </div>
+    </div>
+
     <div class="header">
         <div class="header-content">
             <div class="school-info">
@@ -116,13 +185,13 @@
     </div>
 
     <div class="container">
-        <!-- Home Page -->
         <div id="homePage">
             <div class="admin-panel" id="adminPanel">
-                <h2>🎓 Panel Administrasi Guru</h2>
+                <h2>🎓 Panel Administrasi</h2>
                 <div class="admin-actions">
                     <button class="admin-btn" id="btnSettings">⚙️ Pengaturan Website</button>
                     <button class="admin-btn" id="btnEditHero">📝 Edit Hero Section</button>
+                    <button class="admin-btn" id="btnEditTicker">📢 Edit Running Text</button>
                     <button class="admin-btn" id="btnAddNews">📰 Tambah Berita</button>
                     <button class="admin-btn" id="btnAddEvent">📅 Tambah Kegiatan</button>
                     <button class="admin-btn" id="btnAddAchievement">🏆 Tambah Prestasi</button>
@@ -130,34 +199,33 @@
                 <div id="adminMessage"></div>
             </div>
 
-            <div class="hero">
+            <div class="hero scroll-animate">
                 <img src="https://via.placeholder.com/1200x400" alt="Hero" id="heroImage">
                 <h2 id="heroTitle">Selamat Datang di Website Sekolah Kami</h2>
                 <p id="heroDescription">Website informasi sekolah yang menyediakan berbagai informasi terkini tentang kegiatan, prestasi, dan pengumuman penting sekolah.</p>
             </div>
 
-            <div class="section-header">
+            <div class="section-header scroll-animate">
                 <h2>📰 Berita Terbaru</h2>
                 <p>Informasi dan pengumuman penting dari sekolah</p>
             </div>
             <div class="content-grid" id="newsGrid"></div>
 
-            <div class="section-header">
+            <div class="section-header scroll-animate">
                 <h2>📅 Kegiatan Sekolah</h2>
                 <p>Jadwal dan dokumentasi kegiatan sekolah</p>
             </div>
             <div class="content-grid" id="eventsGrid"></div>
 
-            <div class="section-header">
+            <div class="section-header scroll-animate">
                 <h2>🏆 Prestasi Siswa</h2>
                 <p>Pencapaian membanggakan siswa-siswi kami</p>
             </div>
             <div class="content-grid" id="achievementsGrid"></div>
 
-            <div class="loading" id="loading">⏳ Memuat data...</div>
+            <div class="loading" id="loading">⏳ Memuat data</div>
         </div>
 
-        <!-- Detail Page -->
         <div id="detailPage" class="detail-page">
             <button class="back-btn" id="backBtn">← Kembali</button>
             <div class="detail-content">
@@ -179,10 +247,10 @@
     <div id="loginModal" class="modal">
         <div class="modal-content">
             <span class="close" id="closeLogin">&times;</span>
-            <h2>🔐 Login Guru</h2>
+            <h2>🔐 Login</h2>
             <div class="form-group">
                 <label>Email</label>
-                <input type="email" id="loginEmail" placeholder="Masukkan email guru">
+                <input type="email" id="loginEmail" placeholder="Masukkan email">
             </div>
             <div class="form-group">
                 <label>Password</label>
@@ -220,6 +288,21 @@
             </div>
             <div id="settingsMessage"></div>
             <button class="submit-btn" id="btnSaveSettings">💾 Simpan Pengaturan</button>
+        </div>
+    </div>
+
+    <!-- Running Text Modal -->
+    <div id="tickerModal" class="modal">
+        <div class="modal-content">
+            <span class="close" id="closeTicker">&times;</span>
+            <h2>📢 Edit Running Text</h2>
+            <div class="form-group">
+                <label>Text Berjalan (pisahkan dengan • untuk beberapa pesan)</label>
+                <textarea id="tickerText" placeholder="Contoh: Selamat datang! • Pendaftaran dibuka • Info penting lainnya"></textarea>
+                <small>Gunakan simbol • untuk memisahkan pesan yang berbeda</small>
+            </div>
+            <div id="tickerMessage"></div>
+            <button class="submit-btn" id="btnSaveTicker">💾 Simpan Running Text</button>
         </div>
     </div>
 
@@ -279,29 +362,44 @@
                 loadSettings();
                 loadHero();
                 loadAllContent();
+                setupScrollAnimations();
+            }
+
+            function setupScrollAnimations() {
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            entry.target.classList.add('visible');
+                        }
+                    });
+                }, { threshold: 0.1 });
+
+                document.querySelectorAll('.scroll-animate').forEach(el => {
+                    observer.observe(el);
+                });
             }
 
             function setupEventListeners() {
                 const getId = id => document.getElementById(id);
                 
-                // Auth buttons
                 getId('loginButton').onclick = () => openModal('loginModal');
                 getId('closeLogin').onclick = () => closeModal('loginModal');
                 getId('btnLogin').onclick = login;
                 getId('backBtn').onclick = () => showPage('home');
                 
-                // Admin buttons
                 getId('closeSettings').onclick = () => closeModal('settingsModal');
+                getId('closeTicker').onclick = () => closeModal('tickerModal');
                 getId('closeContent').onclick = () => closeModal('contentModal');
                 getId('btnSettings').onclick = openSettings;
                 getId('btnEditHero').onclick = () => openContentModal('hero');
+                getId('btnEditTicker').onclick = openTicker;
                 getId('btnAddNews').onclick = () => openContentModal('news');
                 getId('btnAddEvent').onclick = () => openContentModal('event');
                 getId('btnAddAchievement').onclick = () => openContentModal('achievement');
                 getId('btnSaveSettings').onclick = saveSettings;
+                getId('btnSaveTicker').onclick = saveTicker;
                 getId('btnSaveContent').onclick = saveContent;
                 
-                // File previews
                 getId('logoFile').onchange = (e) => previewImage(e, 'logoPreview');
                 getId('contentFile').onchange = (e) => previewImage(e, 'contentPreview');
                 
@@ -324,7 +422,6 @@
             function openModal(id) { document.getElementById(id).style.display = 'block'; }
             function closeModal(id) { 
                 document.getElementById(id).style.display = 'none';
-                // Reset forms
                 if (id === 'contentModal') {
                     document.getElementById('contentId').value = '';
                     document.getElementById('contentTitle').value = '';
@@ -373,7 +470,7 @@
                     closeModal('loginModal');
                     showAdminPanel();
                     showMessage('adminMessage', '✅ Login berhasil! Anda sekarang bisa mengelola website.', 'success');
-                    loadAllContent(); // Reload to show edit/delete buttons
+                    loadAllContent();
                 } catch (error) {
                     showMessage('loginMessage', '❌ ' + error.message, 'error');
                 }
@@ -383,9 +480,9 @@
                 await supabaseClient.auth.signOut();
                 currentUser = null;
                 document.getElementById('adminPanel').style.display = 'none';
-                document.getElementById('authButtons').innerHTML = '<button class="login-btn" id="loginButton">Login Guru</button>';
+                document.getElementById('authButtons').innerHTML = '<button class="login-btn" id="loginButton">Login</button>';
                 document.getElementById('loginButton').onclick = () => openModal('loginModal');
-                loadAllContent(); // Reload to hide edit/delete buttons
+                loadAllContent();
             }
 
             function showAdminPanel() {
@@ -406,6 +503,9 @@
                         if (data.logo_url && data.logo_url !== 'https://via.placeholder.com/80') {
                             document.getElementById('headerLogo').src = data.logo_url;
                         }
+                        if (data.running_text) {
+                            document.getElementById('runningText').textContent = data.running_text;
+                        }
                     }
                 } catch (e) {}
             }
@@ -416,11 +516,15 @@
                 openModal('settingsModal');
             }
 
+            function openTicker() {
+                document.getElementById('tickerText').value = document.getElementById('runningText').textContent;
+                openModal('tickerModal');
+            }
+
             async function saveSettings() {
                 const logoFile = document.getElementById('logoFile').files[0];
                 let logoUrl = document.getElementById('settingsLogoUrl').value;
                 
-                // If file uploaded, convert to base64
                 if (logoFile) {
                     logoUrl = await fileToBase64(logoFile);
                 }
@@ -438,6 +542,21 @@
                     showMessage('adminMessage', '✅ Pengaturan berhasil disimpan!', 'success');
                 } catch (e) {
                     showMessage('settingsMessage', '❌ ' + e.message, 'error');
+                }
+            }
+
+            async function saveTicker() {
+                try {
+                    const { error } = await supabaseClient.from('settings').upsert({
+                        id: 1,
+                        running_text: document.getElementById('tickerText').value
+                    });
+                    if (error) throw error;
+                    loadSettings();
+                    closeModal('tickerModal');
+                    showMessage('adminMessage', '✅ Running text berhasil disimpan!', 'success');
+                } catch (e) {
+                    showMessage('tickerMessage', '❌ ' + e.message, 'error');
                 }
             }
 
@@ -610,7 +729,6 @@
                     return showMessage('contentMessage', '❌ Judul dan deskripsi harus diisi', 'error');
                 }
                 
-                // If file uploaded, convert to base64
                 if (imageFile) {
                     imageUrl = await fileToBase64(imageFile);
                 }
@@ -624,7 +742,6 @@
                         if (error) throw error;
                         loadHero();
                     } else if (contentId) {
-                        // Update existing content
                         const { error } = await supabaseClient.from('content').update({ 
                             title, description, 
                             image_url: imageUrl || 'https://via.placeholder.com/350x200',
@@ -633,7 +750,6 @@
                         if (error) throw error;
                         showMessage('adminMessage', '✅ Konten berhasil diupdate!', 'success');
                     } else {
-                        // Insert new content
                         const { error } = await supabaseClient.from('content').insert({ 
                             title, description, 
                             image_url: imageUrl || 'https://via.placeholder.com/350x200', 
