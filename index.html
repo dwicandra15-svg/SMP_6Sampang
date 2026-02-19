@@ -6,7 +6,7 @@
     <title>SMP Negeri 6 Sampang</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #fc4a1a 0%, #f7b733 100%); min-height: 100vh; overflow-x: hidden; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #2d5016 0%, #4a7c2c 100%); min-height: 100vh; overflow-x: hidden; }
         
         /* Running Text / Ticker */
         .running-text-container { background: #ffc107; color: #333; padding: 12px 0; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.2); position: relative; }
@@ -17,10 +17,10 @@
         @keyframes slideDown { from { transform: translateY(-100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         
         .header-content { max-width: 1400px; margin: 0 auto; padding: 20px 40px; display: flex; justify-content: space-between; align-items: center; gap: 20px; }
-        .school-info { display: flex; align-items: center; gap: 5px; animation: fadeIn 0.8s ease-out 0.3s both; flex: 1; }
+        .school-info { display: flex; align-items: center; gap: 20px; animation: fadeIn 0.8s ease-out 0.3s both; flex: 1; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
         
-        .school-logo { width: 120px; height: 120px; object-fit: contain; border-radius: 10px; transition: transform 0.3s ease; flex-shrink: 0; }
+        .school-logo { width: 80px; height: 80px; object-fit: contain; border-radius: 10px; transition: transform 0.3s ease; flex-shrink: 0; }
         .school-logo:hover { transform: rotate(360deg) scale(1.1); }
         
         .school-text { flex: 1; min-width: 0; }
@@ -83,7 +83,7 @@
         .content-card p { color: #666; line-height: 1.6; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
         .content-date { color: #999; font-size: 14px; margin-top: 15px; display: flex; align-items: center; gap: 8px; }
         
-        .category-badge { display: inline-block; background: #007bff; color: white; padding: 5px 15px; border-radius: 20px; font-size: 12px; font-weight: 600; margin-bottom: 15px; animation: pulse 2s infinite; }
+        .category-badge { display: inline-block; background: #4a7c2c; color: white; padding: 5px 15px; border-radius: 20px; font-size: 12px; font-weight: 600; margin-bottom: 15px; animation: pulse 2s infinite; }
         @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
         
         .card-actions { margin-top: 20px; display: none; gap: 10px; }
@@ -332,6 +332,11 @@
                 <textarea id="contentDescription" placeholder="Tulis deskripsi lengkap di sini..."></textarea>
             </div>
             <div class="form-group">
+                <label>Tanggal Publikasi</label>
+                <input type="date" id="contentDate" value="">
+                <small>Tanggal yang akan ditampilkan di card (kosongkan untuk gunakan tanggal hari ini)</small>
+            </div>
+            <div class="form-group">
                 <label>Gambar</label>
                 <div class="file-input-wrapper">
                     <input type="file" id="contentFile" accept="image/*">
@@ -440,6 +445,7 @@
                     document.getElementById('contentImageUrl').value = '';
                     document.getElementById('contentFile').value = '';
                     document.getElementById('contentPreview').style.display = 'none';
+                    document.getElementById('contentDate').value = '';
                 }
             }
             
@@ -625,7 +631,7 @@
                             <img src="${item.image_url || 'https://via.placeholder.com/350x200'}" alt="${item.title}">
                             <h3>${item.title}</h3>
                             <p>${item.description}</p>
-                            <p class="content-date">📅 ${new Date(item.created_at).toLocaleDateString('id-ID', { 
+                            <p class="content-date">📅 ${new Date(item.published_date || item.created_at).toLocaleDateString('id-ID', { 
                                 weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' 
                             })}</p>
                             <div class="card-actions ${currentUser ? 'show' : ''}">
@@ -651,7 +657,7 @@
                 document.getElementById('detailBadge').textContent = badges[item.category];
                 document.getElementById('detailImage').src = item.image_url || 'https://via.placeholder.com/1200x400';
                 document.getElementById('detailTitle').textContent = item.title;
-                document.getElementById('detailMeta').textContent = `📅 ${new Date(item.created_at).toLocaleDateString('id-ID', { 
+                document.getElementById('detailMeta').textContent = `📅 ${new Date(item.published_date || item.created_at).toLocaleDateString('id-ID', { 
                     weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' 
                 })}`;
                 document.getElementById('detailBody').textContent = item.description;
@@ -663,6 +669,10 @@
                 currentContentType = type;
                 currentEditId = null;
                 document.getElementById('contentId').value = '';
+                
+                // Set tanggal hari ini sebagai default
+                const today = new Date().toISOString().split('T')[0];
+                document.getElementById('contentDate').value = today;
                 
                 if (type === 'hero') {
                     document.getElementById('contentModalTitle').textContent = '📝 Edit Hero Section';
@@ -705,6 +715,7 @@
                     document.getElementById('contentDescription').value = data.description;
                     document.getElementById('contentImageUrl').value = data.image_url;
                     document.getElementById('contentCategory').value = data.category;
+                    document.getElementById('contentDate').value = data.published_date || new Date(data.created_at).toISOString().split('T')[0];
                     document.getElementById('categoryGroup').style.display = 'block';
                     openModal('contentModal');
                 } catch (e) {
@@ -735,6 +746,7 @@
                 let imageUrl = document.getElementById('contentImageUrl').value;
                 const imageFile = document.getElementById('contentFile').files[0];
                 const contentId = document.getElementById('contentId').value;
+                const publishedDate = document.getElementById('contentDate').value || new Date().toISOString().split('T')[0];
                 
                 if (!title || !description) {
                     return showMessage('contentMessage', '❌ Judul dan deskripsi harus diisi', 'error');
@@ -756,7 +768,8 @@
                         const { error } = await supabaseClient.from('content').update({ 
                             title, description, 
                             image_url: imageUrl || 'https://via.placeholder.com/350x200',
-                            category: document.getElementById('contentCategory').value
+                            category: document.getElementById('contentCategory').value,
+                            published_date: publishedDate
                         }).eq('id', contentId);
                         if (error) throw error;
                         showMessage('adminMessage', '✅ Konten berhasil diupdate!', 'success');
@@ -764,7 +777,8 @@
                         const { error } = await supabaseClient.from('content').insert({ 
                             title, description, 
                             image_url: imageUrl || 'https://via.placeholder.com/350x200', 
-                            category: document.getElementById('contentCategory').value 
+                            category: document.getElementById('contentCategory').value,
+                            published_date: publishedDate
                         });
                         if (error) throw error;
                         showMessage('adminMessage', '✅ Konten berhasil ditambahkan!', 'success');
