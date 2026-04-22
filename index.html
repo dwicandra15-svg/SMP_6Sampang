@@ -935,17 +935,19 @@
         // ===== PROFILE =====
         async function loadProfile() {
             try {
-                const { data } = await db.from('school_profile').select('*').single();
+                const { data, error } = await db.from('school_profile').select('*').eq('id', 1).single();
                 if (data) {
-                    document.getElementById('profileVisi').textContent = data.visi || '-';
-                    document.getElementById('profileMisi').textContent = data.misi || '-';
-                    document.getElementById('profileSejarah').textContent = data.sejarah || '-';
-                    document.getElementById('profileAlamat').textContent = data.alamat || '-';
-                    document.getElementById('profileTelepon').textContent = data.telepon || '-';
-                    document.getElementById('profileEmail').textContent = data.email || '-';
-                    document.getElementById('profileWebsite').textContent = data.website || '-';
+                    document.getElementById('profileVisi').textContent = data.visi || 'Belum diisi';
+                    document.getElementById('profileMisi').textContent = data.misi || 'Belum diisi';
+                    document.getElementById('profileSejarah').textContent = data.sejarah || 'Belum diisi';
+                    document.getElementById('profileAlamat').textContent = data.alamat || 'Belum diisi';
+                    document.getElementById('profileTelepon').textContent = data.telepon || 'Belum diisi';
+                    document.getElementById('profileEmail').textContent = data.email || 'Belum diisi';
+                    document.getElementById('profileWebsite').textContent = data.website || 'Belum diisi';
                 }
-            } catch(e) {}
+            } catch(e) {
+                console.log('Profile not loaded:', e.message);
+            }
         }
         function openProfileEdit() {
             document.getElementById('profileVisiInput').value = document.getElementById('profileVisi').textContent;
@@ -958,12 +960,37 @@
             openModal('profileModal');
         }
         async function saveProfile() {
+            const payload = {
+                id: 1,
+                visi: document.getElementById('profileVisiInput').value,
+                misi: document.getElementById('profileMisiInput').value,
+                sejarah: document.getElementById('profileSejarahInput').value,
+                alamat: document.getElementById('profileAlamatInput').value,
+                telepon: document.getElementById('profileTeleponInput').value,
+                email: document.getElementById('profileEmailInput').value,
+                website: document.getElementById('profileWebsiteInput').value
+            };
             try {
-                await db.from('school_profile').upsert({ id: 1, visi: document.getElementById('profileVisiInput').value, misi: document.getElementById('profileMisiInput').value, sejarah: document.getElementById('profileSejarahInput').value, alamat: document.getElementById('profileAlamatInput').value, telepon: document.getElementById('profileTeleponInput').value, email: document.getElementById('profileEmailInput').value, website: document.getElementById('profileWebsiteInput').value });
-                loadProfile();
+                // Cek apakah data sudah ada
+                const { data: existing } = await db.from('school_profile').select('id').eq('id', 1).single();
+                
+                if (existing) {
+                    // Update jika sudah ada
+                    const { error } = await db.from('school_profile').update(payload).eq('id', 1);
+                    if (error) throw error;
+                } else {
+                    // Insert jika belum ada
+                    const { error } = await db.from('school_profile').insert(payload);
+                    if (error) throw error;
+                }
+                
+                await loadProfile();
                 closeModal('profileModal');
-                showMsg('adminMessage', '✅ Profil sekolah disimpan!', 'success');
-            } catch(e) { showMsg('profileMessage', '❌ ' + e.message, 'error'); }
+                showMsg('adminMessage', '✅ Profil sekolah berhasil disimpan!', 'success');
+            } catch(e) {
+                showMsg('profileMessage', '❌ Error: ' + e.message, 'error');
+                console.error('Save profile error:', e);
+            }
         }
 
         // ===== TEACHERS =====
