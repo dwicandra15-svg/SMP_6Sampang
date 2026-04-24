@@ -935,7 +935,8 @@
         // ===== PROFILE =====
         async function loadProfile() {
             try {
-                const { data, error } = await db.from('school_profile').select('*').eq('id', 1).single();
+                const { data, error } = await db.from('school_profile').select('*').eq('id', 1).maybeSingle();
+                if (error) { console.error('Load profile error:', error); return; }
                 if (data) {
                     document.getElementById('profileVisi').textContent = data.visi || 'Belum diisi';
                     document.getElementById('profileMisi').textContent = data.misi || 'Belum diisi';
@@ -946,7 +947,7 @@
                     document.getElementById('profileWebsite').textContent = data.website || 'Belum diisi';
                 }
             } catch(e) {
-                console.log('Profile not loaded:', e.message);
+                console.log('Profile load failed:', e.message);
             }
         }
         function openProfileEdit() {
@@ -960,35 +961,48 @@
             openModal('profileModal');
         }
         async function saveProfile() {
-            const payload = {
-                id: 1,
-                visi: document.getElementById('profileVisiInput').value,
-                misi: document.getElementById('profileMisiInput').value,
-                sejarah: document.getElementById('profileSejarahInput').value,
-                alamat: document.getElementById('profileAlamatInput').value,
-                telepon: document.getElementById('profileTeleponInput').value,
-                email: document.getElementById('profileEmailInput').value,
-                website: document.getElementById('profileWebsiteInput').value
-            };
+            const visi = document.getElementById('profileVisiInput').value;
+            const misi = document.getElementById('profileMisiInput').value;
+            const sejarah = document.getElementById('profileSejarahInput').value;
+            const alamat = document.getElementById('profileAlamatInput').value;
+            const telepon = document.getElementById('profileTeleponInput').value;
+            const email = document.getElementById('profileEmailInput').value;
+            const website = document.getElementById('profileWebsiteInput').value;
+
+            if (!visi && !misi) return showMsg('profileMessage', '❌ Visi dan misi harus diisi', 'error');
+
             try {
-                // Cek apakah data sudah ada
-                const { data: existing } = await db.from('school_profile').select('id').eq('id', 1).single();
-                
-                if (existing) {
-                    // Update jika sudah ada
-                    const { error } = await db.from('school_profile').update(payload).eq('id', 1);
-                    if (error) throw error;
-                } else {
-                    // Insert jika belum ada
-                    const { error } = await db.from('school_profile').insert(payload);
-                    if (error) throw error;
+                // Langsung UPDATE dulu (karena data sudah ada di Supabase)
+                const { error: updateError } = await db
+                    .from('school_profile')
+                    .update({ visi, misi, sejarah, alamat, telepon, email, website, updated_at: new Date().toISOString() })
+                    .eq('id', 1);
+
+                if (updateError) {
+                    // Jika UPDATE gagal (data belum ada), coba INSERT
+                    const { error: insertError } = await db
+                        .from('school_profile')
+                        .insert({ id: 1, visi, misi, sejarah, alamat, telepon, email, website });
+                    if (insertError) throw insertError;
                 }
-                
-                await loadProfile();
+
+                // Update tampilan langsung tanpa reload dari DB
+                document.getElementById('profileVisi').textContent = visi || 'Belum diisi';
+                document.getElementById('profileMisi').textContent = misi || 'Belum diisi';
+                document.getElementById('profileSejarah').textContent = sejarah || 'Belum diisi';
+                document.getElementById('profileAlamat').textContent = alamat || 'Belum diisi';
+                document.getElementById('profileTelepon').textContent = telepon || 'Belum diisi';
+                document.getElementById('profileEmail').textContent = email || 'Belum diisi';
+                document.getElementById('profileWebsite').textContent = website || 'Belum diisi';
+
                 closeModal('profileModal');
                 showMsg('adminMessage', '✅ Profil sekolah berhasil disimpan!', 'success');
+
+                // Reload dari DB untuk konfirmasi
+                setTimeout(() => loadProfile(), 1000);
+
             } catch(e) {
-                showMsg('profileMessage', '❌ Error: ' + e.message, 'error');
+                showMsg('profileMessage', '❌ Gagal menyimpan: ' + e.message, 'error');
                 console.error('Save profile error:', e);
             }
         }
