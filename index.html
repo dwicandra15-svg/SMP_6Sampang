@@ -263,7 +263,7 @@
                     <button class="admin-btn" id="btnSettings">⚙️ Pengaturan</button>
                     <button class="admin-btn" id="btnEditHero">📝 Edit Hero</button>
                     <button class="admin-btn" id="btnEditTicker">📢 Running Text</button>
-                    <button class="admin-btn" id="btnAddNews">📰 Tambah Berita</button>
+                    <button class="admin-btn" id="btnAddNews">📰 Tambah Informasi</button>
                     <button class="admin-btn" id="btnAddEvent">📅 Tambah Kegiatan</button>
                     <button class="admin-btn" id="btnAddAchievement">🏆 Tambah Prestasi</button>
                 </div>
@@ -274,10 +274,10 @@
             <div class="hero">
                 <img src="https://via.placeholder.com/1200x400" alt="Hero" id="heroImage">
                 <h2 id="heroTitle">Selamat Datang di SMP Negeri 6 Sampang</h2>
-                <p id="heroDescription">Website resmi SMP Negeri 6 Sampang. Temukan informasi terkini seputar kegiatan, prestasi, dan berita sekolah.</p>
+                <p id="heroDescription">Website resmi SMP Negeri 6 Sampang. Temukan informasi terkini seputar kegiatan, prestasi, dan Informasi sekolah.</p>
             </div>
 
-            <div class="section-header"><h2>📰 Berita Terbaru</h2><p>Informasi dan pengumuman penting dari sekolah</p></div>
+            <div class="section-header"><h2>📰 Informasi Terbaru</h2><p>Informasi dan pengumuman penting dari sekolah</p></div>
             <div class="content-grid" id="newsGrid"></div>
 
             <div class="section-header"><h2>📅 Kegiatan Sekolah</h2><p>Jadwal dan dokumentasi kegiatan sekolah</p></div>
@@ -451,7 +451,7 @@
             <div class="form-group" id="categoryGroup">
                 <label>Kategori</label>
                 <select id="contentCategory">
-                    <option value="news">📰 Berita</option>
+                    <option value="news">📰 Informasi</option>
                     <option value="event">📅 Kegiatan</option>
                     <option value="achievement">🏆 Prestasi</option>
                 </select>
@@ -744,7 +744,7 @@
             document.getElementById('loading').style.display = 'block';
             try {
                 const { data } = await db.from('content').select('*').order('created_at', { ascending: false });
-                renderContent('newsGrid', data.filter(i => i.category === 'news'), '📰 Berita');
+                renderContent('newsGrid', data.filter(i => i.category === 'news'), '📰 Informasi');
                 renderContent('eventsGrid', data.filter(i => i.category === 'event'), '📅 Kegiatan');
                 renderContent('achievementsGrid', data.filter(i => i.category === 'achievement'), '🏆 Prestasi');
             } catch(e) { console.error(e); }
@@ -809,7 +809,7 @@
         }
 
         function showDetail(item) {
-            const badges = { news: '📰 Berita', event: '📅 Kegiatan', achievement: '🏆 Prestasi' };
+            const badges = { news: '📰 Informasi', event: '📅 Kegiatan', achievement: '🏆 Prestasi' };
             const images = item.images && item.images.length > 0 ? item.images : (item.image_url ? [item.image_url] : []);
             const links = item.external_links || [];
 
@@ -862,7 +862,7 @@
                 document.getElementById('contentTitle').value = document.getElementById('heroTitle').textContent;
                 document.getElementById('contentDescription').value = document.getElementById('heroDescription').textContent;
             } else {
-                const titles = { news: '📰 Tambah Berita', event: '📅 Tambah Kegiatan', achievement: '🏆 Tambah Prestasi' };
+                const titles = { news: '📰 Tambah Informasi', event: '📅 Tambah Kegiatan', achievement: '🏆 Tambah Prestasi' };
                 document.getElementById('contentModalTitle').textContent = titles[type];
                 document.getElementById('categoryGroup').style.display = 'block';
                 document.getElementById('contentCategory').value = type;
